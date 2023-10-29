@@ -1,5 +1,3 @@
-drop policy "allowed_authentificated_user" on "public"."Partogramme";
-
 alter table "public"."Partogramme" alter column "hospitalId" set not null;
 
 alter table "public"."Partogramme" alter column "refDoctorId" set not null;
