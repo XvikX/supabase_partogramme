@@ -16,3 +16,19 @@ INSERT INTO auth.identities (id, provider, user_id, identity_data, last_sign_in_
 
 -- set user roles
 SELECT set_claim('108f618b-5a0b-4f9f-ac40-3642cb0e7fbb', 'userrole', '"doctor"');
+
+INSERT INTO public.hospital (id, name, "isDeleted", city)
+  SELECT gen_random_uuid (), 'CHUM', 'false', 'Montréal';
+
+INSERT INTO public.hospital (id, name, "isDeleted", city)
+  SELECT gen_random_uuid (), 'Hôpital Saint-Anne', 'false', 'Montréal';
+
+grant usage on schema public to postgres, anon, authenticated, service_role;
+
+grant all privileges on all tables in schema public to postgres, anon, authenticated, service_role;
+grant all privileges on all functions in schema public to postgres, anon, authenticated, service_role;
+grant all privileges on all sequences in schema public to postgres, anon, authenticated, service_role;
+
+alter default privileges in schema public grant all on tables to postgres, anon, authenticated, service_role;
+alter default privileges in schema public grant all on functions to postgres, anon, authenticated, service_role;
+alter default privileges in schema public grant all on sequences to postgres, anon, authenticated, service_role;
