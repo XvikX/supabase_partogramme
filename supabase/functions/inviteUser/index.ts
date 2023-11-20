@@ -9,30 +9,37 @@ Deno.serve(async (req: Request) => {
     return new Response("ok", { headers: corsHeaders });
   }
   try {
-    // Create a Supabase client with the Auth context of the logged in user.
     const supabaseClient = createClient(
-      // Supabase API URL - env var exported by default.
       Deno.env.get("SUPABASE_URL") ?? "",
-      // Supabase API ANON KEY - env var exported by default.
-      Deno.env.get("SUPABASE_ANON_KEY") ?? "",
-      // Create client with Auth context of the user that called the function.
-      // This way your row-level-security (RLS) policies are applied.
-      {
-        global: {
-          headers: { Authorization: req.headers.get("Authorization")! },
-        },
-      }
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
+      /* { global: { headers: { Authorization: req.headers.get('Authorization')! } } } */
     );
-    // Now we can get the session or user object
-    const {
-      data: { user },
-    } = await supabaseClient.auth.getUser();
-    console.log("User : " + JSON.stringify(user));
-    // And we can run queries in the context of our authenticated user
-    const { data, error } = await supabaseClient.from("Profile").select("*");
+    const { userId, hospitalId, email } = await req.json();
+    console.log("userId : " + userId);
+    console.log("hospitalId : " + hospitalId);
+    console.log("email : " + email);
+
+    const { data, error } = await supabaseClient.rpc("get_claim", {
+      uid: userId,
+      claim: "userrole",
+    });
     if (error) throw error;
-    console.log("Data : " + JSON.stringify(data));
-    return new Response(JSON.stringify({ user, data }), {
+    console.log(data);
+    if (data === "ADMIN") {
+      const options = {
+        data: {
+          hospitalId: hospitalId,
+        },
+      };
+      const { data, error } = await supabaseClient.auth.admin.inviteUserByEmail(
+        email,
+        options
+      );
+      console.log("Error :" + JSON.stringify(error));
+      console.log("User data :" + JSON.stringify(data));
+    }
+
+    return new Response(JSON.stringify({ data }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });
